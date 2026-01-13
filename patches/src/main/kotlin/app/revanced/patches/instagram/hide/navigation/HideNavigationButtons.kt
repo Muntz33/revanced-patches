@@ -3,6 +3,8 @@ package app.revanced.patches.instagram.hide.navigation
 import app.revanced.patcher.extensions.InstructionExtensions.getInstruction
 import app.revanced.patcher.patch.booleanOption
 import app.revanced.patcher.patch.bytecodePatch
+import app.revanced.patches.instagram.misc.extension.sharedExtensionPatch
+import app.revanced.patches.shared.PATCH_NAME_HIDE_NAVIGATION_BUTTONS
 import app.revanced.util.addInstructionsAtControlFlowLabel
 import app.revanced.util.findFreeRegister
 import app.revanced.util.getReference
@@ -18,11 +20,13 @@ private const val EXTENSION_CLASS_DESCRIPTOR =
 
 @Suppress("unused")
 val hideNavigationButtonsPatch = bytecodePatch(
-    name = "Hide navigation buttons",
+    name = PATCH_NAME_HIDE_NAVIGATION_BUTTONS,
     description = "Hides navigation bar buttons, such as the Reels and Create button.",
     use = false
 ) {
-    compatibleWith("com.instagram.android")
+    compatibleWith("com.instagram.android"("401.0.0.48.79"))
+
+    dependsOn(sharedExtensionPatch)
 
     val hideReels by booleanOption(
         key = "hideReels",
@@ -69,20 +73,22 @@ val hideNavigationButtonsPatch = bytecodePatch(
                     const-string v$freeRegister2, "$enumNameField"
                     invoke-static { v$buttonsListRegister, v$freeRegister, v$freeRegister2 }, $EXTENSION_CLASS_DESCRIPTOR->removeNavigationButtonByName(Ljava/util/List;Ljava/lang/String;Ljava/lang/String;)Ljava/util/List;
                     move-result-object v$buttonsListRegister
-                    """
+                """
             }
 
-            if (hideReels!!)
+            if (hideReels!!) {
                 addInstructionsAtControlFlowLabel(
                     returnIndex,
                     instructionsRemoveButtonByName("fragment_clips")
                 )
+            }
 
-            if (hideCreate!!)
+            if (hideCreate!!) {
                 addInstructionsAtControlFlowLabel(
                     returnIndex,
                     instructionsRemoveButtonByName("fragment_share")
                 )
+            }
         }
     }
 }

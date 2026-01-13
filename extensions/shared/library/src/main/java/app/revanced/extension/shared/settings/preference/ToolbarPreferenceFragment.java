@@ -6,8 +6,8 @@ import android.graphics.Insets;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.preference.Preference;
+import android.preference.PreferenceGroup;
 import android.preference.PreferenceScreen;
-import android.util.TypedValue;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowInsets;
@@ -19,9 +19,28 @@ import androidx.annotation.Nullable;
 import app.revanced.extension.shared.Logger;
 import app.revanced.extension.shared.Utils;
 import app.revanced.extension.shared.settings.BaseActivityHook;
+import app.revanced.extension.shared.ui.Dim;
 
 @SuppressWarnings({"deprecation", "NewApi"})
 public class ToolbarPreferenceFragment extends AbstractPreferenceFragment {
+
+    /**
+     * Removes the list of preferences from this fragment, if they exist.
+     * @param keys Preference keys.
+     */
+    protected void removePreferences(String ... keys) {
+        for (String key : keys) {
+            Preference pref = findPreference(key);
+            if (pref != null) {
+                PreferenceGroup parent = pref.getParent();
+                if (parent != null) {
+                    Logger.printDebug(() -> "Removing preference: " + key);
+                    parent.removePreference(pref);
+                }
+            }
+        }
+    }
+
     /**
      * Sets toolbar for all nested preference screens.
      */
@@ -69,14 +88,13 @@ public class ToolbarPreferenceFragment extends AbstractPreferenceFragment {
                             toolbar.setNavigationIcon(getBackButtonDrawable());
                             toolbar.setNavigationOnClickListener(view -> preferenceScreenDialog.dismiss());
 
-                            final int margin = Utils.dipToPixels(16);
-                            toolbar.setTitleMargin(margin, 0, margin, 0);
+                            toolbar.setTitleMargin(Dim.dp16, 0, Dim.dp16, 0);
 
                             TextView toolbarTextView = Utils.getChildView(toolbar,
                                     true, TextView.class::isInstance);
                             if (toolbarTextView != null) {
                                 toolbarTextView.setTextColor(Utils.getAppForegroundColor());
-                                toolbarTextView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20);
+                                toolbarTextView.setTextSize(20);
                             }
 
                             // Allow package-specific toolbar customization.

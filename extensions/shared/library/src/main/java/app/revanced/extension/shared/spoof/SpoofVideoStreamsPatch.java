@@ -14,11 +14,11 @@ import app.revanced.extension.shared.Logger;
 import app.revanced.extension.shared.Utils;
 import app.revanced.extension.shared.settings.AppLanguage;
 import app.revanced.extension.shared.settings.BaseSettings;
-import app.revanced.extension.shared.settings.Setting;
 import app.revanced.extension.shared.spoof.requests.StreamingDataRequest;
 
 @SuppressWarnings("unused")
 public class SpoofVideoStreamsPatch {
+
     /**
      * Domain used for internet connectivity verification.
      * It has an empty response body and is only used to check for a 204 response code.
@@ -39,7 +39,7 @@ public class SpoofVideoStreamsPatch {
     @Nullable
     private static volatile AppLanguage languageOverride;
 
-    private static volatile ClientType preferredClient = ClientType.ANDROID_VR_1_61_48;
+    private static volatile ClientType preferredClient = ClientType.ANDROID_VR_1_43_32;
 
     /**
      * @return If this patch was included during patching.
@@ -54,8 +54,7 @@ public class SpoofVideoStreamsPatch {
     }
 
     /**
-     * @param language Language override for non-authenticated requests. If this is null then
-     *                 {@link BaseSettings#SPOOF_VIDEO_STREAMS_LANGUAGE} is used.
+     * @param language Language override for non-authenticated requests.
      */
     public static void setLanguageOverride(@Nullable AppLanguage language) {
         languageOverride = language;
@@ -66,10 +65,14 @@ public class SpoofVideoStreamsPatch {
         StreamingDataRequest.setClientOrderToUse(availableClients, client);
     }
 
+    public static ClientType getPreferredClient() {
+        return preferredClient;
+    }
+
     public static boolean spoofingToClientWithNoMultiAudioStreams() {
         return isPatchIncluded()
                 && SPOOF_STREAMING_DATA
-                && preferredClient != ClientType.IPADOS;
+                && !preferredClient.supportsMultiAudioTracks;
     }
 
     /**
@@ -316,12 +319,5 @@ public class SpoofVideoStreamsPatch {
         }
 
         return videoFormat;
-    }
-
-    public static final class AudioStreamLanguageOverrideAvailability implements Setting.Availability {
-        @Override
-        public boolean isAvailable() {
-            return BaseSettings.SPOOF_VIDEO_STREAMS.get() && !preferredClient.useAuth;
-        }
     }
 }

@@ -21,22 +21,26 @@ import app.revanced.extension.youtube.shared.PlayerType;
 
 @SuppressWarnings("unused")
 public final class LayoutComponentsFilter extends Filter {
-    private static final StringTrieSearch mixPlaylistsExceptions = new StringTrieSearch(
+    private static final StringTrieSearch mixPlaylistsContextExceptions = new StringTrieSearch(
             "V.ED", // Playlist browse id.
             "java.lang.ref.WeakReference"
     );
-    private static final ByteArrayFilterGroup mixPlaylistsExceptions2 = new ByteArrayFilterGroup(
+    private static final ByteArrayFilterGroup mixPlaylistsBufferExceptions = new ByteArrayFilterGroup(
             null,
-            "cell_description_body"
+            "cell_description_body",
+            "channel_profile"
     );
     private static final ByteArrayFilterGroup mixPlaylists = new ByteArrayFilterGroup(
             null,
             "&list="
     );
 
+    private static final String PAGE_HEADER_PATH = "page_header.e";
+
     private final StringTrieSearch exceptions = new StringTrieSearch();
     private final StringFilterGroup communityPosts;
     private final StringFilterGroup surveys;
+    private final StringFilterGroup subscribeButton;
     private final StringFilterGroup notifyMe;
     private final StringFilterGroup singleItemInformationPanel;
     private final StringFilterGroup expandableMetadata;
@@ -67,8 +71,14 @@ public final class LayoutComponentsFilter extends Filter {
                 "chips_shelf"
         );
 
+        final var visualSpacer = new StringFilterGroup(
+                Settings.HIDE_VISUAL_SPACER,
+                "cell_divider"
+        );
+
         addIdentifierCallbacks(
-                chipsShelf
+                chipsShelf,
+                visualSpacer
         );
 
         // Paths.
@@ -76,18 +86,19 @@ public final class LayoutComponentsFilter extends Filter {
         communityPosts = new StringFilterGroup(
                 Settings.HIDE_COMMUNITY_POSTS,
                 "post_base_wrapper", // may be obsolete and no longer needed.
-                "text_post_root.eml",
-                "images_post_root.eml",
-                "images_post_slim.eml", // may be obsolete and no longer needed.
-                "images_post_root_slim.eml",
-                "text_post_root_slim.eml",
-                "post_base_wrapper_slim.eml",
-                "poll_post_root.eml",
-                "videos_post_root.eml",
-                "post_shelf_slim.eml",
-                "videos_post_responsive_root.eml",
-                "text_post_responsive_root.eml",
-                "poll_post_responsive_root.eml"
+                "text_post_root.e",
+                "images_post_root.e",
+                "images_post_slim.e", // may be obsolete and no longer needed.
+                "images_post_root_slim.e",
+                "text_post_root_slim.e",
+                "post_base_wrapper_slim.e",
+                "poll_post_root.e",
+                "videos_post_root.e",
+                "post_shelf_slim.e",
+                "videos_post_responsive_root.e",
+                "text_post_responsive_root.e",
+                "poll_post_responsive_root.e",
+                "shared_post_root.e"
         );
 
         final var subscribersCommunityGuidelines = new StringFilterGroup(
@@ -149,7 +160,7 @@ public final class LayoutComponentsFilter extends Filter {
 
         final var channelLinksPreview = new StringFilterGroup(
                 Settings.HIDE_LINKS_PREVIEW,
-                "attribution.eml"
+                "attribution.e"
         );
 
         final var emergencyBox = new StringFilterGroup(
@@ -190,8 +201,8 @@ public final class LayoutComponentsFilter extends Filter {
 
         final var playables = new StringFilterGroup(
                 Settings.HIDE_PLAYABLES,
-                "horizontal_gaming_shelf.eml",
-                "mini_game_card.eml"
+                "horizontal_gaming_shelf.e",
+                "mini_game_card.e"
         );
 
         // Playable horizontal shelf header.
@@ -228,7 +239,7 @@ public final class LayoutComponentsFilter extends Filter {
 
         compactChannelBarInnerButton = new StringFilterGroup(
                 null,
-                "|button.eml"
+                "|button.e"
         );
 
         joinMembershipButton = new ByteArrayFilterGroup(
@@ -248,36 +259,45 @@ public final class LayoutComponentsFilter extends Filter {
 
         final var videoRecommendationLabels = new StringFilterGroup(
                 Settings.HIDE_VIDEO_RECOMMENDATION_LABELS,
-                "endorsement_header_footer.eml"
+                "endorsement_header_footer.e"
         );
 
         channelProfile = new StringFilterGroup(
                 null,
-                "channel_profile.eml",
-                "page_header.eml"
+                "channel_profile.e",
+                PAGE_HEADER_PATH
         );
         channelProfileBuffer = new ByteArrayFilterGroupList();
         channelProfileBuffer.addAll(new ByteArrayFilterGroup(
-                        Settings.HIDE_VISIT_STORE_BUTTON,
-                        "header_store_button"
+                        Settings.HIDE_STORE_BUTTON,
+                        "store_button"
                 ),
                 new ByteArrayFilterGroup(
-                        Settings.HIDE_VISIT_COMMUNITY_BUTTON,
+                        Settings.HIDE_COMMUNITY_BUTTON,
                         "community_button"
+                ),
+                new ByteArrayFilterGroup(
+                        Settings.HIDE_JOIN_BUTTON,
+                        "sponsor_button"
                 )
+        );
+
+        subscribeButton = new StringFilterGroup(
+                Settings.HIDE_SUBSCRIBE_BUTTON_IN_CHANNEL_PAGE,
+                "subscribe_button"
         );
 
         horizontalShelves = new StringFilterGroup(
                 Settings.HIDE_HORIZONTAL_SHELVES,
-                "horizontal_video_shelf.eml",
-                "horizontal_shelf.eml",
-                "horizontal_shelf_inline.eml",
-                "horizontal_tile_shelf.eml"
+                "horizontal_video_shelf.e",
+                "horizontal_shelf.e",
+                "horizontal_shelf_inline.e",
+                "horizontal_tile_shelf.e"
         );
 
         ticketShelf = new ByteArrayFilterGroup(
                 Settings.HIDE_TICKET_SHELF,
-                "ticket_item.eml"
+                "ticket_item.e"
         );
 
         addPathCallbacks(
@@ -306,6 +326,7 @@ public final class LayoutComponentsFilter extends Filter {
                 quickActions,
                 relatedVideos,
                 singleItemInformationPanel,
+                subscribeButton,
                 subscribersCommunityGuidelines,
                 subscriptionsChipBar,
                 surveys,
@@ -334,6 +355,10 @@ public final class LayoutComponentsFilter extends Filter {
 
         if (matchedGroup == channelProfile) {
             return channelProfileBuffer.check(buffer).isFiltered();
+        }
+
+        if (matchedGroup == subscribeButton) {
+            return path.startsWith(PAGE_HEADER_PATH);
         }
 
         if (matchedGroup == communityPosts && NavigationBar.isBackButtonVisible()) {
@@ -379,17 +404,15 @@ public final class LayoutComponentsFilter extends Filter {
                 return false;
             }
 
-            // Prevent playlist items being hidden, if a mix playlist is present in it.
-            if (mixPlaylistsExceptions.matches(conversionContext.toString())) {
-                return false;
-            }
-
-            // Prevent hiding the description of some videos accidentally.
-            if (mixPlaylistsExceptions2.check(bytes).isFiltered()) {
-                return false;
-            }
-
-            if (mixPlaylists.check(bytes).isFiltered()) {
+            if (mixPlaylists.check(bytes).isFiltered()
+                    // Prevent hiding the description of some videos accidentally.
+                    && !mixPlaylistsBufferExceptions.check(bytes).isFiltered()
+                    // Prevent playlist items being hidden, if a mix playlist is present in it.
+                    // Check last since it requires creating a context string.
+                    //
+                    // FIXME: The conversion context passed in does not always generate a valid toString.
+                    //        This string check may no longer be needed, or the patch may be broken.
+                    && !mixPlaylistsContextExceptions.matches(conversionContext.toString())) {
                 Logger.printDebug(() -> "Filtered mix playlist");
                 return true;
             }

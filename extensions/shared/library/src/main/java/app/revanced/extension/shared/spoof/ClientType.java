@@ -31,6 +31,7 @@ public enum ClientType {
             "132.0.6808.3",
             "1.61.48",
             false,
+            false,
             "Android VR 1.61"
     ),
     /**
@@ -50,7 +51,35 @@ public enum ClientType {
             "107.0.5284.2",
             "1.43.32",
             ANDROID_VR_1_61_48.useAuth,
+            ANDROID_VR_1_61_48.supportsMultiAudioTracks,
             "Android VR 1.43"
+    ),
+    /**
+     * Video not playable: Paid / Movie / Private / Age-restricted.
+     * Note: The 'Authorization' key must be excluded from the header.
+     *
+     * According to TeamNewPipe in 2022, if the 'androidSdkVersion' field is missing,
+     * the GVS did not return a valid response:
+     * [NewPipe#8713 (comment)](https://github.com/TeamNewPipe/NewPipe/issues/8713#issuecomment-1207443550).
+     *
+     * According to the latest commit in yt-dlp, the GVS returns a valid response
+     * even if the 'androidSdkVersion' field is missing:
+     * [yt-dlp#14693](https://github.com/yt-dlp/yt-dlp/pull/14693).
+     *
+     * For some reason, PoToken is not required.
+     */
+    ANDROID_NO_SDK(
+            3,
+            "ANDROID",
+            "",
+            "",
+            "",
+            Build.VERSION.RELEASE,
+            "20.05.46",
+            "com.google.android.youtube/20.05.46 (Linux; U; Android " + Build.VERSION.RELEASE + ") gzip",
+            false,
+            true,
+            "Android No SDK"
     ),
     /**
      * Cannot play livestreams and lacks HDR, but can play videos with music and labeled "for children".
@@ -69,6 +98,7 @@ public enum ClientType {
             "132.0.6779.0",
             "23.47.101",
             true,
+            false,
             "Android Studio"
     ),
     /**
@@ -82,6 +112,7 @@ public enum ClientType {
             "1.3.21O771",
             "0.1",
             "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Safari/605.1.15",
+            false,
             false,
             "visionOS"
     ),
@@ -107,6 +138,7 @@ public enum ClientType {
             "19.22.3",
             "com.google.ios.youtube/19.22.3 (iPad7,6; U; CPU iPadOS 17_7_10 like Mac OS X; " + Locale.getDefault() + ")",
             false,
+            true,
             "iPadOS"
     );
 
@@ -181,6 +213,11 @@ public enum ClientType {
     public final boolean useAuth;
 
     /**
+     * If the client supports multiple audio tracks.
+     */
+    public final boolean supportsMultiAudioTracks;
+
+    /**
      * Friendly name displayed in stats for nerds.
      */
     public final String friendlyName;
@@ -200,6 +237,7 @@ public enum ClientType {
                @NonNull String cronetVersion,
                String clientVersion,
                boolean useAuth,
+               boolean supportsMultiAudioTracks,
                String friendlyName) {
         this.id = id;
         this.clientName = clientName;
@@ -213,6 +251,7 @@ public enum ClientType {
         this.cronetVersion = cronetVersion;
         this.clientVersion = clientVersion;
         this.useAuth = useAuth;
+        this.supportsMultiAudioTracks = supportsMultiAudioTracks;
         this.friendlyName = friendlyName;
 
         Locale defaultLocale = Locale.getDefault();
@@ -238,6 +277,7 @@ public enum ClientType {
                String clientVersion,
                String userAgent,
                boolean useAuth,
+               boolean supportsMultiAudioTracks,
                String friendlyName) {
         this.id = id;
         this.clientName = clientName;
@@ -248,6 +288,7 @@ public enum ClientType {
         this.clientVersion = clientVersion;
         this.userAgent = userAgent;
         this.useAuth = useAuth;
+        this.supportsMultiAudioTracks = supportsMultiAudioTracks;
         this.friendlyName = friendlyName;
         this.packageName = null;
         this.androidSdkVersion = null;

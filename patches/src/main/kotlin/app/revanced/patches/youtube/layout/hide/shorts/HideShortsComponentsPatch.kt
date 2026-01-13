@@ -27,6 +27,7 @@ import app.revanced.util.forEachLiteralValueInstruction
 import app.revanced.util.getReference
 import app.revanced.util.indexOfFirstInstructionOrThrow
 import app.revanced.util.indexOfFirstLiteralInstruction
+import app.revanced.util.removeFromParent
 import app.revanced.util.returnLate
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
@@ -100,6 +101,7 @@ private val hideShortsComponentsResourcePatch = resourcePatch {
                     SwitchPreference("revanced_hide_shorts_effect_button"),
                     SwitchPreference("revanced_hide_shorts_green_screen_button"),
                     SwitchPreference("revanced_hide_shorts_hashtag_button"),
+                    SwitchPreference("revanced_hide_shorts_live_preview"),
                     SwitchPreference("revanced_hide_shorts_new_posts_button"),
                     SwitchPreference("revanced_hide_shorts_shop_button"),
                     SwitchPreference("revanced_hide_shorts_tagged_products"),
@@ -108,6 +110,7 @@ private val hideShortsComponentsResourcePatch = resourcePatch {
                     SwitchPreference("revanced_hide_shorts_stickers"),
 
                     // Bottom of the screen.
+                    SwitchPreference("revanced_hide_shorts_auto_dubbed_label"),
                     SwitchPreference("revanced_hide_shorts_location_label"),
                     SwitchPreference("revanced_hide_shorts_channel_bar"),
                     SwitchPreference("revanced_hide_shorts_info_panel"),
@@ -127,7 +130,7 @@ private val hideShortsComponentsResourcePatch = resourcePatch {
             )
 
             if (hideShortsAppShortcut == true) {
-                shortsItem.parentNode.removeChild(shortsItem)
+                shortsItem.removeFromParent()
             }
         }
 
@@ -138,7 +141,7 @@ private val hideShortsComponentsResourcePatch = resourcePatch {
             )
 
             if (hideShortsWidget == true) {
-                shortsItem.parentNode.removeChild(shortsItem)
+                shortsItem.removeFromParent()
             }
         }
 

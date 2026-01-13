@@ -46,7 +46,7 @@ public class CheckWatchHistoryDomainNameResolutionPatch {
     /**
      * Injection point.
      *
-     * Checks if s.youtube.com is blacklisted and playback history will fail to work.
+     * Checks if YouTube watch history endpoint cannot be reached.
      */
     public static void checkDnsResolver(Activity context) {
         if (!Utils.isNetworkConnected() || !BaseSettings.CHECK_WATCH_HISTORY_DOMAIN_NAME.get()) return;
@@ -61,34 +61,30 @@ public class CheckWatchHistoryDomainNameResolutionPatch {
                 // Prevent this false positive by verify youtube.com resolves.
                 // If youtube.com does not resolve, then it's not a watch history domain resolving error
                 // because the entire app will not work since no domains are resolving.
-                if (!domainResolvesToValidIP("youtube.com")
+                String domainYouTube = "youtube.com";
+                if (!domainResolvesToValidIP(domainYouTube)
+                        || domainResolvesToValidIP(HISTORY_TRACKING_ENDPOINT)
+                        // Check multiple times, so a false positive from a flaky connection is almost impossible.
+                        || !domainResolvesToValidIP(domainYouTube)
                         || domainResolvesToValidIP(HISTORY_TRACKING_ENDPOINT)) {
                     return;
                 }
 
                 Utils.runOnMainThread(() -> {
-                    try {
-                        // Create the custom dialog.
-                        Pair<Dialog, LinearLayout> dialogPair = CustomDialog.create(
-                                context,
-                                str("revanced_check_watch_history_domain_name_dialog_title"), // Title.
-                                Html.fromHtml(str("revanced_check_watch_history_domain_name_dialog_message")), // Message (HTML).
-                                null, // No EditText.
-                                null, // OK button text.
-                                () -> {}, // OK button action (just dismiss).
-                                () -> {}, // Cancel button action (just dismiss).
-                                str("revanced_check_watch_history_domain_name_dialog_ignore"), // Neutral button text.
-                                () -> BaseSettings.CHECK_WATCH_HISTORY_DOMAIN_NAME.save(false),    // Neutral button action (Ignore).
-                                true // Dismiss dialog on Neutral button click.
-                        );
+                    Pair<Dialog, LinearLayout> dialogPair = CustomDialog.create(
+                            context,
+                            str("revanced_check_watch_history_domain_name_dialog_title"), // Title.
+                            Html.fromHtml(str("revanced_check_watch_history_domain_name_dialog_message")), // Message (HTML).
+                            null, // No EditText.
+                            null, // OK button text.
+                            () -> {}, // OK button action (just dismiss).
+                            null, // No cancel button.
+                            str("revanced_check_watch_history_domain_name_dialog_ignore"), // Neutral button text.
+                            () -> BaseSettings.CHECK_WATCH_HISTORY_DOMAIN_NAME.save(false),    // Neutral button action (Ignore).
+                            true // Dismiss dialog on Neutral button click.
+                    );
 
-                        // Show the dialog.
-                        Dialog dialog = dialogPair.first;
-
-                        Utils.showDialog(context, dialog, false, null);
-                    } catch (Exception ex) {
-                        Logger.printException(() -> "checkDnsResolver dialog creation failure", ex);
-                    }
+                    Utils.showDialog(context, dialogPair.first, false, null);
                 });
             } catch (Exception ex) {
                 Logger.printException(() -> "checkDnsResolver failure", ex);
